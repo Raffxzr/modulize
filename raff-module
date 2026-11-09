@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+# raff-module — scaffold Magisk / KernelSU / APatch modules.
+#
+# Usage:
+#   raff-module init [directory]
+#   raff-module build [directory]
+#   raff-module doctor [directory]
+#   raff-module version
+
+set -euo pipefail
+
+# Resolve the repository root even when the CLI is symlinked into $PATH.
+_self=${BASH_SOURCE[0]}
+while [[ -L "$_self" ]]; do
+  _dir=$(cd -P "$(dirname "$_self")" && pwd)
+  _self=$(readlink "$_self")
+  [[ "$_self" != /* ]] && _self="$_dir/$_self"
+done
+ROOT_DIR=$(cd -P "$(dirname "$_self")" && pwd)
+export ROOT_DIR
+
+RAFF_MODULE_VERSION="0.1.0"
+export RAFF_MODULE_VERSION
+
+# shellcheck source=lib/common.sh
+source "$ROOT_DIR/lib/common.sh"
+
+usage() {
+  cat <<'EOF'
+raff-module — scaffold Magisk / KernelSU / APatch modules
+
+Usage:
+  raff-module init [directory] [options]
+  raff-module build [directory]
+  raff-module doctor [directory]
+  raff-module version
+  raff-module help
+
+Run "raff-module init --help" for init options.
+EOF
+}
+
+version() {
+  printf 'raff-module %s\n' "$RAFF_MODULE_VERSION"
+}
+
+main() {
+  local command=${1:-help}
+  [[ $# -gt 0 ]] && shift
+
+  case "$command" in
+    init)
+      # shellcheck source=lib/init.sh
+      source "$ROOT_DIR/lib/init.sh"
+      cmd_init "$@"
+      ;;
+    build)
+      # shellcheck source=lib/build.sh
+      source "$ROOT_DIR/lib/build.sh"
+      cmd_build "$@"
+      ;;
+    doctor)
+      # shellcheck source=lib/doctor.sh
+      source "$ROOT_DIR/lib/doctor.sh"
+      cmd_doctor "$@"
+      ;;
+    version | --version | -v)
+      version
+      ;;
+    help | --help | -h)
+      usage
+      ;;
+    *)
+      error "unknown command: $command"
+      usage >&2
+      exit 2
+      ;;
+  esac
+}
+
+main "$@"
