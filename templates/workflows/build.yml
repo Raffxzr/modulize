@@ -1,0 +1,47 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Package module
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Validate shell syntax
+        run: |
+          set -euo pipefail
+          mapfile -t files < <(
+            find . -type f \
+              -not -path './.git/*' \
+              -not -path './build/*' \
+              -not -path './dist/*' \
+              \( -name '*.sh' -o -path './system/bin/*' -o -path './system/xbin/*' \) \
+              -print
+          )
+          for file in "${files[@]}"; do
+            echo "checking ${file}"
+            bash -n "${file}"
+          done
+
+      - name: Build module zip
+        run: |
+          chmod +x build.sh
+          ./build.sh
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: module-zip
+          path: dist/*.zip
+          if-no-files-found: error

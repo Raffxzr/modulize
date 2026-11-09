@@ -1,0 +1,143 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing tag to release (for example v1.0.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build and publish
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
+
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+          fetch-depth: 0
+
+      - name: Read and validate module metadata
+        id: meta
+        run: |
+          set -euo pipefail
+
+          module_id="$(sed -n 's/^id=//p' module.prop | tr -d '\r')"
+          module_name="$(sed -n 's/^name=//p' module.prop | tr -d '\r')"
+          version="$(sed -n 's/^version=//p' module.prop | tr -d '\r')"
+          version_code="$(sed -n 's/^versionCode=//p' module.prop | tr -d '\r')"
+
+          if [ -z "${module_id}" ] || [ -z "${version}" ] || [ -z "${version_code}" ]; then
+            echo "::error::module.prop is missing id, version or versionCode"
+            exit 1
+          fi
+
+          if [ "${version}" != "${RELEASE_TAG}" ]; then
+            echo "::error::module.prop version '${version}' does not match tag '${RELEASE_TAG}'"
+            exit 1
+          fi
+
+          {
+            echo "module_id=${module_id}"
+            echo "module_name=${module_name:-${module_id}}"
+            echo "version=${version}"
+            echo "version_code=${version_code}"
+            echo "zip_name=${module_id}-${version}.zip"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Build module zip
+        run: |
+          chmod +x build.sh
+          ./build.sh
+
+      - name: Extract release notes from CHANGELOG
+        run: |
+          set -euo pipefail
+          version="${{ steps.meta.outputs.version }}"
+
+          awk -v ver="${version}" '
+            index($0, "## [" ver "]") == 1 { capture = 1; next }
+            capture && /^## \[/ { exit }
+            capture { print }
+          ' CHANGELOG.md > release-notes.md
+
+          if [ ! -s release-notes.md ]; then
+            printf '%s %s\n' "${{ steps.meta.outputs.module_name }}" "${version}" > release-notes.md
+          fi
+
+      - name: Create or update GitHub release
+        run: |
+          set -euo pipefail
+
+          tag="${RELEASE_TAG}"
+          zip="dist/${{ steps.meta.outputs.zip_name }}"
+          title="${{ steps.meta.outputs.module_name }} ${tag}"
+
+          if gh release view "${tag}" >/dev/null 2>&1; then
+            gh release upload "${tag}" "${zip}" --clobber
+            gh release edit "${tag}" --title "${title}" --notes-file release-notes.md
+          else
+            gh release create "${tag}" "${zip}" \
+              --title "${title}" \
+              --notes-file release-notes.md \
+              --verify-tag
+          fi
+
+      - name: Update OTA manifest (update.json)
+        run: |
+          set -euo pipefail
+
+          tag="${RELEASE_TAG}"
+          version="${{ steps.meta.outputs.version }}"
+          version_code="${{ steps.meta.outputs.version_code }}"
+          repo="${{ github.repository }}"
+          default_branch="${{ github.event.repository.default_branch }}"
+          zip_name="${{ steps.meta.outputs.zip_name }}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git fetch origin "${default_branch}"
+          git checkout "${default_branch}"
+          git pull --ff-only origin "${default_branch}"
+
+          zip_url="https://github.com/${repo}/releases/download/${tag}/${zip_name}"
+          changelog_url="https://raw.githubusercontent.com/${repo}/${default_branch}/CHANGELOG.md"
+
+          jq \
+            --arg version "${version}" \
+            --argjson version_code "${version_code}" \
+            --arg zip_url "${zip_url}" \
+            --arg changelog "${changelog_url}" \
+            '.version = $version
+             | .versionCode = $version_code
+             | .zipUrl = $zip_url
+             | .changelog = $changelog' \
+            update.json > update.json.tmp
+
+          mv update.json.tmp update.json
+
+          if git diff --quiet -- update.json; then
+            echo "update.json is already current; nothing to commit."
+            exit 0
+          fi
+
+          git add update.json
+          git commit -m "chore: update OTA manifest for ${version}"
+          git push origin "${default_branch}"

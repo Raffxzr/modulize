@@ -1,0 +1,17 @@
+#!/system/bin/sh
+# {{MODULE_NAME}} CLI stub. Replace the status branch with real commands.
+
+case "${1:-status}" in
+  status)
+    echo "{{MODULE_NAME}} {{VERSION}}"
+    echo "Module directory: ${0%/*}"
+    ;;
+  help | -h | --help)
+    echo "usage: {{MODULE_ID}} [status]"
+    ;;
+  *)
+    echo "unknown command: $1" >&2
+    echo "usage: {{MODULE_ID}} [status]" >&2
+    exit 2
+    ;;
+esac

@@ -1,0 +1,12 @@
+#!/system/bin/sh
+# {{MODULE_NAME}} late_start service hook.
+MODDIR=${0%/*}
+
+(
+  until [ "$(getprop sys.boot_completed)" = "1" ]; do
+    sleep 5
+  done
+
+  # Add boot-time tasks here. Keep them in the background so boot is not
+  # blocked by long-running work.
+) &

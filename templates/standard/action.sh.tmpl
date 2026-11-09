@@ -1,0 +1,16 @@
+#!/system/bin/sh
+# {{MODULE_NAME}} action-button handler.
+MODDIR=${0%/*}
+
+echo "=========================================="
+printf '  %s %s by %s\n' '{{MODULE_NAME}}' '{{VERSION}}' '{{AUTHOR}}'
+echo "=========================================="
+
+if [ -x "$MODDIR/system/bin/{{MODULE_ID}}" ]; then
+  "$MODDIR/system/bin/{{MODULE_ID}}" status || true
+else
+  echo "No CLI entrypoint found at system/bin/{{MODULE_ID}}."
+  echo "Add one or edit action.sh to run your own command."
+fi
+
+echo "=========================================="

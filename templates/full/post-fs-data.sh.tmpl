@@ -1,0 +1,7 @@
+#!/system/bin/sh
+# {{MODULE_NAME}} post-fs-data hook.
+# Runs before /data is decrypted. Keep this short and non-blocking.
+MODDIR=${0%/*}
+
+# Example:
+# mkdir -p /data/adb/{{MODULE_ID}}
