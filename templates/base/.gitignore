@@ -1,0 +1,10 @@
+# Build artefacts (never commit release zips)
+*.zip
+build/
+dist/
+release-notes.md
+
+# Local scratch
+.tmp/
+*.log
+.DS_Store

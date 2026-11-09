@@ -1,0 +1,7 @@
+# Extra paths copied into the module zip, one per line.
+# Lines starting with # are ignored. Paths are relative to the repo root.
+#
+# examples:
+# etc/hosts
+# vendor/etc/audio_effects.xml
+# product/app/Example/Example.apk

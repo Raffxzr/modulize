@@ -1,0 +1,71 @@
+# {{MODULE_NAME}}
+
+![Version](https://img.shields.io/badge/version-{{VERSION}}-38bdf8?style=flat-square)
+![Root](https://img.shields.io/badge/root-Magisk%20%7C%20KernelSU%20%7C%20APatch-10b981?style=flat-square)
+![Author](https://img.shields.io/badge/author-{{AUTHOR}}-f59e0b?style=flat-square)
+
+{{DESCRIPTION}}
+
+Generated with [`raff-module`](https://github.com/Raffxzr/raff-module) using the
+`{{TEMPLATE}}` profile.
+
+## Features
+
+- Add your features here.
+
+## Requirements
+
+- Android SDK {{MIN_SDK}} or newer
+- Magisk, KernelSU, or APatch
+- A working recovery-free installation flow
+
+## Installation
+
+1. Download `{{MODULE_ID}}-{{VERSION}}.zip` from
+   [Releases](https://github.com/{{REPO}}/releases).
+2. Flash the zip in Magisk, KernelSU, or APatch.
+3. Reboot your device.
+
+## Build from source
+
+```bash
+./build.sh
+```
+
+The flashable zip is written to `dist/{{MODULE_ID}}-{{VERSION}}.zip`.
+Build output and release zips are intentionally ignored by git.
+
+## Release flow
+
+1. Bump `version` and `versionCode` in `module.prop`.
+2. Add a `## [{{VERSION}}]` section to `CHANGELOG.md`.
+3. Commit and push.
+4. Tag the same version and push the tag:
+
+   ```bash
+   git tag {{VERSION}}
+   git push origin main --tags
+   ```
+
+The release workflow validates the tag against `module.prop`, builds the zip,
+publishes the GitHub release, and refreshes `update.json` on `{{BRANCH}}`.
+
+## Project layout
+
+```text
+.
+├── module.prop          # module identity and OTA endpoint
+├── customize.sh         # installer logic (SKIPUNZIP + permissions)
+├── service.sh           # late_start service hook
+├── action.sh            # root-manager action button
+├── uninstall.sh         # cleanup on removal
+├── system/              # systemless overlay payload
+├── webroot/             # optional WebUI payload
+├── build.sh             # reproducible module zip builder
+├── update.json          # OTA manifest consumed by root managers
+└── .github/workflows/   # build + release automation
+```
+
+## License
+
+MIT
