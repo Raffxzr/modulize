@@ -164,3 +164,119 @@ relative_path() {
     printf '%s' "$to"
   fi
 }
+
+# Read a key=value property from a file (e.g. module.prop)
+get_prop() {
+  local key=$1 file=$2
+  [[ -f "$file" ]] || return 1
+  sed -n "s/^${key}=//p" "$file" | tr -d '\r' | head -n 1
+}
+
+# Safely set or update a key=value property in a file
+set_prop() {
+  local key=$1 val=$2 file=$3
+  [[ -f "$file" ]] || return 1
+  local tmp
+  tmp=$(mktemp "${TMPDIR:-/tmp}/modulize_prop.XXXXXX")
+  if grep -q "^${key}=" "$file"; then
+    sed "s#^${key}=.*#${key}=$(_sed_value "$val")#" "$file" > "$tmp"
+  else
+    cat "$file" > "$tmp"
+    printf '%s=%s\n' "$key" "$val" >> "$tmp"
+  fi
+  mv "$tmp" "$file"
+}
+
+# Bump a semantic version (e.g. v0.1.0 -> v0.1.1 or v0.2.0 or v1.0.0)
+bump_semver() {
+  local current=$1 type=${2:-patch}
+  local prefix='' clean_v=$current
+  if [[ "$clean_v" =~ ^v ]]; then
+    prefix='v'
+    clean_v=${clean_v#v}
+  fi
+
+  # Explicit version provided directly
+  if [[ "$type" =~ ^v?[0-9] ]]; then
+    if [[ "$type" =~ ^v ]]; then
+      printf '%s' "$type"
+    else
+      printf 'v%s' "$type"
+    fi
+    return 0
+  fi
+
+  local major=0 minor=0 patch=0
+  local IFS=.
+  read -r major minor patch _ <<< "$clean_v"
+  major=${major:-0}
+  minor=${minor:-0}
+  patch=${patch:-0}
+
+  patch="${patch%%[!0-9]*}"
+  [[ "$major" =~ ^[0-9]+$ ]] || major=0
+  [[ "$minor" =~ ^[0-9]+$ ]] || minor=0
+  [[ "$patch" =~ ^[0-9]+$ ]] || patch=0
+
+  case "$type" in
+    patch)
+      patch=$((patch + 1))
+      ;;
+    minor)
+      minor=$((minor + 1))
+      patch=0
+      ;;
+    major)
+      major=$((major + 1))
+      minor=0
+      patch=0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+
+  printf '%s%d.%d.%d' "${prefix:-v}" "$major" "$minor" "$patch"
+}
+
+# Synchronize version, versionCode, and zipUrl in update.json
+sync_update_json() {
+  local json_file=$1 version=$2 version_code=$3 zip_url=$4
+  [[ -f "$json_file" ]] || return 1
+
+  local tmp
+  tmp=$(mktemp "${TMPDIR:-/tmp}/modulize_json.XXXXXX")
+
+  if have_cmd jq; then
+    jq \
+      --arg v "$version" \
+      --argjson c "$version_code" \
+      --arg z "$zip_url" \
+      '.version = $v | .versionCode = $c | .zipUrl = $z' \
+      "$json_file" > "$tmp" && mv "$tmp" "$json_file"
+    return 0
+  fi
+
+  if have_cmd python3; then
+    python3 -c "
+import json, sys
+p = sys.argv[1]
+with open(p, 'r') as f:
+    d = json.load(f)
+d['version'] = sys.argv[2]
+d['versionCode'] = int(sys.argv[3])
+d['zipUrl'] = sys.argv[4]
+with open(p, 'w') as f:
+    json.dump(d, f, indent=2)
+    f.write('\n')
+" "$json_file" "$version" "$version_code" "$zip_url"
+    rm -f "$tmp"
+    return 0
+  fi
+
+  sed \
+    -e "s#\"version\": *\"[^\"]*\"#\"version\": \"$(_sed_value "$version")\"#" \
+    -e "s#\"versionCode\": *[0-9]*#\"versionCode\": $version_code#" \
+    -e "s#\"zipUrl\": *\"[^\"]*\"#\"zipUrl\": \"$(_sed_value "$zip_url")\"#" \
+    "$json_file" > "$tmp" && mv "$tmp" "$json_file"
+}
