@@ -1,0 +1,6 @@
+* text=auto eol=lf
+
+*.sh text eol=lf
+raff-module text eol=lf
+templates/** text eol=lf
+tests/** text eol=lf

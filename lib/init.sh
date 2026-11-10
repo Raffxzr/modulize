@@ -283,6 +283,7 @@ cmd_init() {
   copy_template "$template_dir/base/README.md.tmpl" "$target_abs/README.md"
   copy_template "$template_dir/base/CHANGELOG.md.tmpl" "$target_abs/CHANGELOG.md"
   copy_raw "$template_dir/base/.gitignore" "$target_abs/.gitignore"
+  copy_raw "$template_dir/base/.gitattributes" "$target_abs/.gitattributes"
   copy_raw "$template_dir/base/module.include" "$target_abs/module.include"
   copy_raw "$template_dir/base/META-INF/com/google/android/update-binary" \
     "$target_abs/META-INF/com/google/android/update-binary" 0755
