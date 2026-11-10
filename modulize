@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
-# modulize — scaffold Magisk / KernelSU / APatch modules.
+# modulize — scaffold and manage Magisk / KernelSU / APatch modules.
 #
 # Usage:
-#   modulize init [directory]
+#   modulize init [directory] [options]
+#   modulize add <component> [directory]
+#   modulize bump [patch|minor|major|<version>] [directory]
 #   modulize build [directory]
-#   modulize doctor [directory]
+#   modulize doctor [directory] [--strict] [--fix]
+#   modulize lint [directory]
 #   modulize version
 
 set -euo pipefail
@@ -19,7 +22,7 @@ done
 ROOT_DIR=$(cd -P "$(dirname "$_self")" && pwd)
 export ROOT_DIR
 
-MODULIZE_VERSION="0.2.0"
+MODULIZE_VERSION="0.3.0"
 export MODULIZE_VERSION
 
 # shellcheck source=lib/common.sh
@@ -27,16 +30,28 @@ source "$ROOT_DIR/lib/common.sh"
 
 usage() {
   cat <<'EOF'
-modulize — scaffold Magisk / KernelSU / APatch modules
+modulize — scaffold and manage Magisk / KernelSU / APatch modules
 
 Usage:
   modulize init [directory] [options]
+  modulize add <component> [directory] [options]
+  modulize bump [patch|minor|major|<version>] [directory] [options]
   modulize build [directory]
-  modulize doctor [directory]
+  modulize doctor [directory] [--fix] [--strict]
+  modulize lint [directory] [--strict]
   modulize version
   modulize help
 
-Run "modulize init --help" for init options.
+Commands:
+  init       Scaffold a new production-ready root module
+  add        Add modular components (webui, action, service, cli, post-fs-data, workflow)
+  bump       Increment version & sync module.prop, update.json, and CHANGELOG.md
+  build      Compile the module into a flashable zip
+  doctor     Validate metadata, line endings, OTA manifests, and workflows (--fix to auto-repair)
+  lint       Check shell scripts syntax, JSON manifests, and template placeholders
+  version    Show current modulize version
+
+Run "modulize <command> --help" for detailed command options.
 EOF
 }
 
@@ -54,6 +69,16 @@ main() {
       source "$ROOT_DIR/lib/init.sh"
       cmd_init "$@"
       ;;
+    add)
+      # shellcheck source=lib/add.sh
+      source "$ROOT_DIR/lib/add.sh"
+      cmd_add "$@"
+      ;;
+    bump)
+      # shellcheck source=lib/bump.sh
+      source "$ROOT_DIR/lib/bump.sh"
+      cmd_bump "$@"
+      ;;
     build)
       # shellcheck source=lib/build.sh
       source "$ROOT_DIR/lib/build.sh"
@@ -63,6 +88,11 @@ main() {
       # shellcheck source=lib/doctor.sh
       source "$ROOT_DIR/lib/doctor.sh"
       cmd_doctor "$@"
+      ;;
+    lint)
+      # shellcheck source=lib/lint.sh
+      source "$ROOT_DIR/lib/lint.sh"
+      cmd_lint "$@"
       ;;
     version | --version | -v)
       version
