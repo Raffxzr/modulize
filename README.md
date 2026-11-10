@@ -64,8 +64,11 @@ the generated release workflow (preinstalled on GitHub runners).
 
 ```bash
 modulize init [directory] [options]
+modulize add <component> [directory] [options]
+modulize bump [patch|minor|major|<version>] [directory] [options]
 modulize build [directory]
-modulize doctor [directory] [--strict]
+modulize doctor [directory] [--strict] [--fix]
+modulize lint [directory] [--strict]
 modulize version
 ```
 
@@ -134,10 +137,39 @@ script refuses CRLF shell scripts, normalises permissions, validates required
 installer files, and packages only module payload (never `update.json`, docs,
 or dev files).
 
-## Validate a module
+## Add components
+
+Add modular capabilities to an existing module at any time:
 
 ```bash
-modulize doctor MyModule
+modulize add webui              # WebUI dashboard in webroot/index.html
+modulize add post-fs-data        # Early boot hook
+modulize add action             # Manager action button
+modulize add service            # Late-start service hook
+modulize add cli                # CLI tool at system/bin/<module-id>
+modulize add workflow           # CI/CD workflows (.github/workflows)
+```
+
+Use `--force` to overwrite existing component files.
+
+## Bump module version
+
+Bump version and synchronize metadata across `module.prop`, `update.json`, and `CHANGELOG.md`:
+
+```bash
+modulize bump patch             # v0.1.0 -> v0.1.1 (versionCode +1)
+modulize bump minor             # v0.1.0 -> v0.2.0 (versionCode +1)
+modulize bump major             # v0.1.0 -> v1.0.0 (versionCode +1)
+modulize bump v2.0.0            # Explicit version
+modulize bump patch --notes "Fix thermal service daemon"
+```
+
+## Validate and auto-repair
+
+```bash
+modulize doctor MyModule        # Inspect for common module issues
+modulize doctor MyModule --fix  # Auto-repair CRLF, permissions & update.json drift
+modulize lint MyModule          # Check shell syntax (bash -n) and JSON validity
 ```
 
 `doctor` checks:
@@ -148,8 +180,10 @@ modulize doctor MyModule
 - the OTA zip URL matches `<id>-<version>.zip`
 - `CHANGELOG.md` contains the current version
 - installer files, build script, and workflows are present
-- shell scripts use LF line endings
+- shell scripts use LF line endings and executable permissions
 
+With `--fix`, `doctor` automatically converts CRLF to Unix LF, sets `chmod +x` on
+missing executable scripts, and re-synchronizes drifted `update.json` fields.
 Use `--strict` in CI if warnings should fail the build.
 
 ## Release flow
@@ -193,7 +227,7 @@ The templates follow the same conventions as `RaffOptimizer`:
 ## Development
 
 ```bash
-make test     # 80+ smoke assertions, no test framework needed
+make test     # 145+ smoke assertions, no test framework needed
 make lint     # bash -n on the CLI, libs, and tests
 ```
 

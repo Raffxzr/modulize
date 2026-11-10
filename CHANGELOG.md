@@ -2,6 +2,23 @@
 
 All notable changes to `modulize` are documented in this file.
 
+## [0.3.0] - 2026-11-10
+
+### Added
+
+- `modulize bump [patch|minor|major|<version>]` to increment semver and
+  `versionCode`, synchronize `update.json` (`zipUrl`), and prepend release
+  entries to `CHANGELOG.md`.
+- `modulize add <component>` to add modular components into existing modules
+  (`webui`, `post-fs-data`, `action`, `service`, `cli`, `uninstall`, `system.prop`,
+  `workflow`).
+- `modulize doctor --fix` for automated remediation: repairs CRLF line endings,
+  restores executable permissions on scripts, and fixes metadata drift in
+  `update.json`.
+- `modulize lint` pre-flight command to validate shell script syntax (`bash -n`),
+  JSON syntax, template placeholders, and line endings.
+- Expanded automated smoke test suite to 145 passing assertions.
+
 ## [0.2.0] - 2026-11-10
 
 ### Changed
