@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test and scaffold
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Lint shell syntax
+        run: make lint
+
+      - name: Run smoke tests
+        run: make test
+
+      - name: Scaffold, validate, and build a demo module
+        run: |
+          set -euo pipefail
+          workdir="$(mktemp -d)"
+          ./raff-module init "$workdir/Demo" \
+            --id Demo \
+            --name "Demo Module" \
+            --repo Raffxzr/Demo \
+            --template full \
+            --min-sdk 26 \
+            -y
+          ./raff-module doctor "$workdir/Demo" --strict
+          ./raff-module build "$workdir/Demo"
+          test -f "$workdir/Demo/dist/Demo-v0.1.0.zip"
+          unzip -Z1 "$workdir/Demo/dist/Demo-v0.1.0.zip" | sort

@@ -1,5 +1,7 @@
 # raff-module
 
+[![CI](https://github.com/Raffxzr/raff-module/actions/workflows/ci.yml/badge.svg)](https://github.com/Raffxzr/raff-module/actions/workflows/ci.yml)
+
 Scaffold production-ready **Magisk / KernelSU / APatch** modules in seconds.
 
 ```bash
