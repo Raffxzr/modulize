@@ -213,11 +213,21 @@ section 'custom branch'
 BRANCHED="$TMP_DIR/branched"
 run_ok 'init honors a custom default branch' \
   "$CLI" init "$BRANCHED" --id BranchMod --repo Raffxzr/BranchMod \
-  --branch develop -y
+  --branch feature/demo -y
 
-assert_contains "$BRANCHED/module.prop" 'Raffxzr/BranchMod/develop/update.json'
-assert_contains "$BRANCHED/.github/workflows/build.yml" 'branches: [develop]'
-assert_contains "$BRANCHED/update.json" 'Raffxzr/BranchMod/develop/CHANGELOG.md'
+assert_contains "$BRANCHED/module.prop" 'Raffxzr/BranchMod/feature/demo/update.json'
+assert_contains "$BRANCHED/.github/workflows/build.yml" 'branches: [feature/demo]'
+assert_contains "$BRANCHED/update.json" 'Raffxzr/BranchMod/feature/demo/CHANGELOG.md'
+run_ok 'doctor accepts a nested branch name' "$CLI" doctor "$BRANCHED"
+
+# ---------------------------------------------------------------------------
+section 'default id'
+# ---------------------------------------------------------------------------
+DEFAULT_ID="$TMP_DIR/CamelCaseModule"
+run_ok 'init derives a CamelCase id from the directory' \
+  "$CLI" init "$DEFAULT_ID" --repo Raffxzr/CamelCaseModule -y
+assert_contains "$DEFAULT_ID/module.prop" 'id=CamelCaseModule'
+assert_contains "$DEFAULT_ID/module.prop" 'name=CamelCaseModule'
 
 # ---------------------------------------------------------------------------
 section 'validation'

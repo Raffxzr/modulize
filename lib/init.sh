@@ -206,7 +206,7 @@ cmd_init() {
   [[ -n "$base" && "$base" != "." && "$base" != "/" ]] || base='my-module'
 
   local id_default
-  id_default=$(slugify "$base")
+  id_default=$(module_id_from_name "$base")
   [[ -n "$id_default" ]] || id_default='my-module'
   if [[ ! "$id_default" =~ ^[A-Za-z] ]]; then
     id_default="module-$id_default"

@@ -20,3 +20,5 @@ All notable changes to `raff-module` are documented in this file.
 
 - Generated build workflow follows the `--branch` value instead of hardcoding
   `main`.
+- `doctor` accepts nested branch names such as `feature/demo`.
+- `init` preserves CamelCase when deriving a module id from the directory name.

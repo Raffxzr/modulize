@@ -43,6 +43,16 @@ slugify() {
           -e 's/-$//'
 }
 
+# Sanitize a directory name into a module id while preserving CamelCase.
+module_id_from_name() {
+  printf '%s' "$1" \
+    | sed -e 's/[[:space:]_]\+/-/g' \
+          -e 's/[^A-Za-z0-9._-]//g' \
+          -e 's/-\{2,\}/-/g' \
+          -e 's/^-//' \
+          -e 's/-$//'
+}
+
 titleize() {
   local input=$1 word out=()
   input=${input//[-_.]/ }

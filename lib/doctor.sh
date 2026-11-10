@@ -80,7 +80,7 @@ cmd_doctor() {
   fi
 
   if [[ -n "$update_json_url" ]]; then
-    if [[ "$update_json_url" =~ ^https://raw\.githubusercontent\.com/[^/]+/[^/]+/[^/]+/update\.json$ ]]; then
+    if [[ "$update_json_url" =~ ^https://raw\.githubusercontent\.com/[^/]+/[^/]+/.+/update\.json$ ]]; then
       doctor_pass "updateJson: $update_json_url"
     else
       doctor_error "updateJson is not a raw.githubusercontent.com update.json URL: $update_json_url"
