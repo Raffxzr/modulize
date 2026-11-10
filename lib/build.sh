@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# raff-module build — run the module build script from anywhere.
+# modulize build — run the module build script from anywhere.
 
 build_usage() {
   cat <<'EOF'
 Usage:
-  raff-module build [directory]
+  modulize build [directory]
 
 Run DIRECTORY/build.sh (default: current directory) and print the resulting
 flashable zip. Any extra arguments are forwarded to build.sh.
@@ -25,7 +25,7 @@ cmd_build() {
         break
         ;;
       -*)
-        die "unknown option: $1 (try: raff-module build --help)"
+        die "unknown option: $1 (try: modulize build --help)"
         ;;
       *)
         dir=$1

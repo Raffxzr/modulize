@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# raff-module init — scaffold a Magisk / KernelSU / APatch module.
+# modulize init — scaffold a Magisk / KernelSU / APatch module.
 
 init_usage() {
   cat <<'EOF'
 Usage:
-  raff-module init [directory] [options]
+  modulize init [directory] [options]
 
 Create a ready-to-build module tree in DIRECTORY (default: current directory).
 
@@ -26,9 +26,9 @@ Options:
   -h, --help             Show this help
 
 Examples:
-  raff-module init MyModule
-  raff-module init MyModule --id MyModule --repo Raffxzr/MyModule -y
-  raff-module init ./demo --template full --min-sdk 26
+  modulize init MyModule
+  modulize init MyModule --id MyModule --repo Raffxzr/MyModule -y
+  modulize init ./demo --template full --min-sdk 26
 EOF
 }
 
@@ -192,7 +192,7 @@ cmd_init() {
         done
         ;;
       -*)
-        die "unknown option: $1 (try: raff-module init --help)"
+        die "unknown option: $1 (try: modulize init --help)"
         ;;
       *)
         [[ -z "$target" ]] || die "only one target directory is supported"
@@ -228,7 +228,7 @@ cmd_init() {
 
   MODULE_ID=${MODULE_ID:-$id_default}
   MODULE_NAME=${MODULE_NAME:-$(titleize "$MODULE_ID")}
-  DESCRIPTION=${DESCRIPTION:-A Magisk / KernelSU / APatch module scaffolded by raff-module.}
+  DESCRIPTION=${DESCRIPTION:-A Magisk / KernelSU / APatch module scaffolded by modulize.}
   REPO=${REPO:-$owner/$MODULE_ID}
 
   if [[ "$assume_yes" -eq 0 ]] && is_tty; then

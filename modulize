@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# raff-module — scaffold Magisk / KernelSU / APatch modules.
+# modulize — scaffold Magisk / KernelSU / APatch modules.
 #
 # Usage:
-#   raff-module init [directory]
-#   raff-module build [directory]
-#   raff-module doctor [directory]
-#   raff-module version
+#   modulize init [directory]
+#   modulize build [directory]
+#   modulize doctor [directory]
+#   modulize version
 
 set -euo pipefail
 
@@ -19,29 +19,29 @@ done
 ROOT_DIR=$(cd -P "$(dirname "$_self")" && pwd)
 export ROOT_DIR
 
-RAFF_MODULE_VERSION="0.1.0"
-export RAFF_MODULE_VERSION
+MODULIZE_VERSION="0.1.0"
+export MODULIZE_VERSION
 
 # shellcheck source=lib/common.sh
 source "$ROOT_DIR/lib/common.sh"
 
 usage() {
   cat <<'EOF'
-raff-module — scaffold Magisk / KernelSU / APatch modules
+modulize — scaffold Magisk / KernelSU / APatch modules
 
 Usage:
-  raff-module init [directory] [options]
-  raff-module build [directory]
-  raff-module doctor [directory]
-  raff-module version
-  raff-module help
+  modulize init [directory] [options]
+  modulize build [directory]
+  modulize doctor [directory]
+  modulize version
+  modulize help
 
-Run "raff-module init --help" for init options.
+Run "modulize init --help" for init options.
 EOF
 }
 
 version() {
-  printf 'raff-module %s\n' "$RAFF_MODULE_VERSION"
+  printf 'modulize %s\n' "$MODULIZE_VERSION"
 }
 
 main() {

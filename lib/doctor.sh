@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# raff-module doctor — sanity-check a generated module tree.
+# modulize doctor — sanity-check a generated module tree.
 
 doctor_usage() {
   cat <<'EOF'
 Usage:
-  raff-module doctor [directory] [--strict]
+  modulize doctor [directory] [--strict]
 
 Validate module.prop, update.json, installer files, and release automation.
 With --strict, warnings are treated as errors.
@@ -28,7 +28,7 @@ cmd_doctor() {
         return 0
         ;;
       -*)
-        die "unknown option: $1 (try: raff-module doctor --help)"
+        die "unknown option: $1 (try: modulize doctor --help)"
         ;;
       *)
         dir=$1

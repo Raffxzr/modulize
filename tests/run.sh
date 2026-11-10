@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Smoke tests for raff-module. No external test framework required.
+# Smoke tests for modulize. No external test framework required.
 
 set -euo pipefail
 
 ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-CLI="$ROOT_DIR/raff-module"
-TMP_DIR=$(mktemp -d "${TMPDIR:-/tmp}/raff-module-tests.XXXXXX")
+CLI="$ROOT_DIR/modulize"
+TMP_DIR=$(mktemp -d "${TMPDIR:-/tmp}/modulize-tests.XXXXXX")
 trap 'rm -rf "$TMP_DIR"' EXIT
 
 PASS=0
@@ -162,7 +162,7 @@ assert_contains "$STANDARD/customize.sh" '[ "$API" -ge 21 ]'
 assert_no_placeholders "$STANDARD"
 check_shell_syntax "$STANDARD"
 
-run_ok 'raff-module build produces a zip' "$CLI" build "$STANDARD"
+run_ok 'modulize build produces a zip' "$CLI" build "$STANDARD"
 ZIP="$STANDARD/dist/DemoModule-v0.1.0.zip"
 assert_file "$ZIP"
 if [[ -f "$ZIP" ]]; then

@@ -1,18 +1,20 @@
-# raff-module
+# modulize
 
-[![CI](https://github.com/Raffxzr/raff-module/actions/workflows/ci.yml/badge.svg)](https://github.com/Raffxzr/raff-module/actions/workflows/ci.yml)
+[![CI](https://github.com/Raffxzr/modulize/actions/workflows/ci.yml/badge.svg)](https://github.com/Raffxzr/modulize/actions/workflows/ci.yml)
 
 Scaffold production-ready **Magisk / KernelSU / APatch** modules in seconds.
 
 ```bash
-raff-module init MyModule
+modulize init MyModule
 ```
 
-`raff-module` takes the parts that are identical in every module — installer,
+`modulize` takes the parts that are identical in every module — installer,
 OTA manifest, build script, release automation — and generates them with your
 metadata already filled in. The output is a flashable module, not a toy
 skeleton: it is extracted from real modules such as
 [RaffOptimizer](https://github.com/Raffxzr/RaffOptimizer).
+
+> Previously known as `raff-module`. The old GitHub URL redirects here.
 
 ## What you get
 
@@ -38,9 +40,9 @@ MyModule/
 ## Install the CLI
 
 ```bash
-git clone https://github.com/Raffxzr/raff-module.git
-cd raff-module
-make install            # -> ~/.local/bin/raff-module
+git clone https://github.com/Raffxzr/modulize.git
+cd modulize
+make install            # -> ~/.local/bin/modulize
 ```
 
 Install system-wide instead:
@@ -52,7 +54,7 @@ sudo make install PREFIX=/usr/local
 You can also run it directly without installing:
 
 ```bash
-./raff-module init MyModule
+./modulize init MyModule
 ```
 
 Requirements: `bash`, `sed`, `zip`, and `git`. `jq` is used by `doctor` and by
@@ -61,16 +63,16 @@ the generated release workflow (preinstalled on GitHub runners).
 ## Usage
 
 ```bash
-raff-module init [directory] [options]
-raff-module build [directory]
-raff-module doctor [directory] [--strict]
-raff-module version
+modulize init [directory] [options]
+modulize build [directory]
+modulize doctor [directory] [--strict]
+modulize version
 ```
 
 ### Interactive
 
 ```bash
-raff-module init MyModule
+modulize init MyModule
 ```
 
 You will be asked for the module id, display name, version, author, repo,
@@ -79,7 +81,7 @@ branch, minimum SDK, and template profile. Press enter to keep a default.
 ### Non-interactive
 
 ```bash
-raff-module init MyModule \
+modulize init MyModule \
   --id MyModule \
   --name "My Module" \
   --version v1.0.0 \
@@ -124,7 +126,7 @@ raff-module init MyModule \
 cd MyModule
 ./build.sh
 # or, from anywhere:
-raff-module build MyModule
+modulize build MyModule
 ```
 
 Output: `dist/MyModule-v0.1.0.zip`, with a SHA-256 checksum printed. The build
@@ -135,7 +137,7 @@ or dev files).
 ## Validate a module
 
 ```bash
-raff-module doctor MyModule
+modulize doctor MyModule
 ```
 
 `doctor` checks:

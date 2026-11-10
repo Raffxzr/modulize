@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Shared helpers for the raff-module CLI.
+# Shared helpers for the modulize CLI.
 
 if [[ -t 1 ]]; then
   BOLD=$'\033[1m'
@@ -122,7 +122,7 @@ render_template() {
   local src=$1 dst=$2 tmp
   [[ -f "$src" ]] || die "template not found: $src"
   mkdir -p "$(dirname "$dst")"
-  tmp=$(mktemp "${TMPDIR:-/tmp}/raff-module.XXXXXX")
+  tmp=$(mktemp "${TMPDIR:-/tmp}/modulize.XXXXXX")
 
   sed \
     -e "s#{{MODULE_ID}}#$(_sed_value "${MODULE_ID:-}")#g" \
