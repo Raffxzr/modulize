@@ -309,10 +309,10 @@ cmd_init() {
   fi
 
   if [[ "$enable_workflows" -eq 1 ]]; then
-    copy_raw "$template_dir/workflows/build.yml" \
-      "$target_abs/.github/workflows/build.yml"
     copy_raw "$template_dir/workflows/release.yml" \
       "$target_abs/.github/workflows/release.yml"
+    copy_template "$template_dir/workflows/build.yml.tmpl" \
+      "$target_abs/.github/workflows/build.yml"
   fi
 
   if [[ "$git_init" -eq 1 ]] && ! git -C "$target_abs" rev-parse --git-dir >/dev/null 2>&1; then

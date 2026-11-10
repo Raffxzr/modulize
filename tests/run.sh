@@ -112,7 +112,7 @@ STANDARD="$TMP_DIR/standard"
 run_ok 'init creates a standard module' \
   "$CLI" init "$STANDARD" \
   --id DemoModule --name 'Demo Module' --author Tester \
-  --description 'Example module' --repo Raffxzr/DemoModule -y
+  --description 'Example & module #1 | test' --repo Raffxzr/DemoModule -y
 
 assert_file "$STANDARD/module.prop"
 assert_file "$STANDARD/customize.sh"
@@ -137,6 +137,7 @@ assert_exec "$STANDARD/META-INF/com/google/android/update-binary"
 assert_contains "$STANDARD/module.prop" 'id=DemoModule'
 assert_contains "$STANDARD/module.prop" 'version=v0.1.0'
 assert_contains "$STANDARD/module.prop" 'versionCode=1'
+assert_contains "$STANDARD/module.prop" 'description=Example & module #1 | test'
 assert_contains "$STANDARD/module.prop" 'updateJson=https://raw.githubusercontent.com/Raffxzr/DemoModule/main/update.json'
 assert_contains "$STANDARD/update.json" '"version": "v0.1.0"'
 assert_contains "$STANDARD/update.json" '"versionCode": 1'
@@ -204,6 +205,18 @@ assert_exec "$FULL/post-fs-data.sh"
 assert_contains "$FULL/customize.sh" '[ "$API" -ge 26 ]'
 assert_contains "$FULL/webroot/index.html" '<title>FullMod</title>'
 check_shell_syntax "$FULL"
+
+# ---------------------------------------------------------------------------
+section 'custom branch'
+# ---------------------------------------------------------------------------
+BRANCHED="$TMP_DIR/branched"
+run_ok 'init honors a custom default branch' \
+  "$CLI" init "$BRANCHED" --id BranchMod --repo Raffxzr/BranchMod \
+  --branch develop -y
+
+assert_contains "$BRANCHED/module.prop" 'Raffxzr/BranchMod/develop/update.json'
+assert_contains "$BRANCHED/.github/workflows/build.yml" 'branches: [develop]'
+assert_contains "$BRANCHED/update.json" 'Raffxzr/BranchMod/develop/CHANGELOG.md'
 
 # ---------------------------------------------------------------------------
 section 'validation'
