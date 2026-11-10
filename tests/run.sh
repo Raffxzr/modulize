@@ -246,6 +246,10 @@ run_fail 'rejects an invalid versionCode' \
 run_fail 'rejects an invalid repo' \
   "$CLI" init "$TMP_DIR/bad-repo" --id GoodMod --repo 'not-a-repo' -y
 
+touch "$TMP_DIR/not-a-directory"
+run_fail 'rejects a target that is a file' \
+  "$CLI" init "$TMP_DIR/not-a-directory" --id GoodMod --repo owner/repo -y
+
 run_fail 'refuses to overwrite a non-empty directory' \
   "$CLI" init "$STANDARD" --id DemoModule --repo owner/repo -y
 

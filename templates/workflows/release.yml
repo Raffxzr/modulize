@@ -48,6 +48,11 @@ jobs:
             exit 1
           fi
 
+          if ! [[ "${version_code}" =~ ^[0-9]+$ ]]; then
+            echo "::error::versionCode must be an integer (got '${version_code}')"
+            exit 1
+          fi
+
           if [ "${version}" != "${RELEASE_TAG}" ]; then
             echo "::error::module.prop version '${version}' does not match tag '${RELEASE_TAG}'"
             exit 1
@@ -67,9 +72,12 @@ jobs:
           ./build.sh
 
       - name: Extract release notes from CHANGELOG
+        env:
+          VERSION: ${{ steps.meta.outputs.version }}
+          MODULE_NAME: ${{ steps.meta.outputs.module_name }}
         run: |
           set -euo pipefail
-          version="${{ steps.meta.outputs.version }}"
+          version="${VERSION}"
 
           awk -v ver="${version}" '
             index($0, "## [" ver "]") == 1 { capture = 1; next }
@@ -78,16 +86,19 @@ jobs:
           ' CHANGELOG.md > release-notes.md
 
           if [ ! -s release-notes.md ]; then
-            printf '%s %s\n' "${{ steps.meta.outputs.module_name }}" "${version}" > release-notes.md
+            printf '%s %s\n' "${MODULE_NAME}" "${version}" > release-notes.md
           fi
 
       - name: Create or update GitHub release
+        env:
+          MODULE_NAME: ${{ steps.meta.outputs.module_name }}
+          ZIP_NAME: ${{ steps.meta.outputs.zip_name }}
         run: |
           set -euo pipefail
 
           tag="${RELEASE_TAG}"
-          zip="dist/${{ steps.meta.outputs.zip_name }}"
-          title="${{ steps.meta.outputs.module_name }} ${tag}"
+          zip="dist/${ZIP_NAME}"
+          title="${MODULE_NAME} ${tag}"
 
           if gh release view "${tag}" >/dev/null 2>&1; then
             gh release upload "${tag}" "${zip}" --clobber
@@ -100,15 +111,21 @@ jobs:
           fi
 
       - name: Update OTA manifest (update.json)
+        env:
+          VERSION: ${{ steps.meta.outputs.version }}
+          VERSION_CODE: ${{ steps.meta.outputs.version_code }}
+          ZIP_NAME: ${{ steps.meta.outputs.zip_name }}
+          REPO: ${{ github.repository }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
           set -euo pipefail
 
           tag="${RELEASE_TAG}"
-          version="${{ steps.meta.outputs.version }}"
-          version_code="${{ steps.meta.outputs.version_code }}"
-          repo="${{ github.repository }}"
-          default_branch="${{ github.event.repository.default_branch }}"
-          zip_name="${{ steps.meta.outputs.zip_name }}"
+          version="${VERSION}"
+          version_code="${VERSION_CODE}"
+          repo="${REPO}"
+          default_branch="${DEFAULT_BRANCH}"
+          zip_name="${ZIP_NAME}"
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

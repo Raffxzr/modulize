@@ -35,9 +35,16 @@ EOF
 detect_github_owner() {
   local owner
 
-  if have_cmd gh && gh api user --jq .login >/dev/null 2>&1; then
-    gh api user --jq .login
-    return 0
+  if have_cmd gh; then
+    if have_cmd timeout; then
+      owner=$(timeout 5 gh api user --jq .login 2>/dev/null || true)
+    else
+      owner=$(gh api user --jq .login 2>/dev/null || true)
+    fi
+    if [[ -n "$owner" ]]; then
+      printf '%s' "$owner"
+      return 0
+    fi
   fi
 
   owner=$(git config --get github.user 2>/dev/null || true)
@@ -255,7 +262,11 @@ cmd_init() {
     *) die "invalid template '$profile' (choose minimal, standard, or full)" ;;
   esac
 
-  mkdir -p "$target"
+  if [[ -e "$target" && ! -d "$target" ]]; then
+    die "target exists and is not a directory: $target"
+  fi
+
+  mkdir -p "$target" || die "could not create target directory: $target"
   local target_abs
   target_abs=$(cd "$target" && pwd)
 

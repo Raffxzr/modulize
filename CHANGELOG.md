@@ -22,3 +22,8 @@ All notable changes to `raff-module` are documented in this file.
   `main`.
 - `doctor` accepts nested branch names such as `feature/demo`.
 - `init` preserves CamelCase when deriving a module id from the directory name.
+- `init` rejects a target path that exists but is not a directory.
+- GitHub owner detection no longer blocks scaffolding when `gh` is slow or
+  offline.
+- Generated release workflow passes metadata through step environment variables
+  and validates that `versionCode` is numeric.
