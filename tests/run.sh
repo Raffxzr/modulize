@@ -105,6 +105,18 @@ check_shell_syntax() {
   done
 }
 
+assert_no_placeholders() {
+  local dir=$1 matches
+  matches=$(grep -RInE '\{\{[A-Z_]+\}\}' "$dir" \
+    --exclude-dir=.git --exclude-dir=build --exclude-dir=dist 2>/dev/null || true)
+  if [[ -z "$matches" ]]; then
+    pass 'no unrendered placeholders'
+  else
+    fail 'unrendered template placeholders found'
+    printf '%s\n' "$matches" | sed 's/^/       /' >&2
+  fi
+}
+
 # ---------------------------------------------------------------------------
 section 'standard profile'
 # ---------------------------------------------------------------------------
@@ -147,6 +159,7 @@ assert_contains "$STANDARD/CHANGELOG.md" '## [v0.1.0]'
 assert_contains "$STANDARD/customize.sh" 'SKIPUNZIP=1'
 assert_contains "$STANDARD/customize.sh" '[ "$API" -ge 21 ]'
 
+assert_no_placeholders "$STANDARD"
 check_shell_syntax "$STANDARD"
 
 run_ok 'raff-module build produces a zip' "$CLI" build "$STANDARD"
@@ -189,6 +202,7 @@ assert_no_file "$MINIMAL/uninstall.sh"
 assert_no_file "$MINIMAL/system.prop"
 assert_no_file "$MINIMAL/.github/workflows/release.yml"
 assert_contains "$MINIMAL/module.prop" 'id=MiniMod'
+assert_no_placeholders "$MINIMAL"
 check_shell_syntax "$MINIMAL"
 
 # ---------------------------------------------------------------------------
@@ -205,6 +219,7 @@ assert_file "$FULL/system/bin/FullMod"
 assert_exec "$FULL/post-fs-data.sh"
 assert_contains "$FULL/customize.sh" '[ "$API" -ge 26 ]'
 assert_contains "$FULL/webroot/index.html" '<title>FullMod</title>'
+assert_no_placeholders "$FULL"
 check_shell_syntax "$FULL"
 
 # ---------------------------------------------------------------------------
