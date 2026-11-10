@@ -285,6 +285,113 @@ mkdir -p "$MISSING"
 run_fail 'doctor fails without module.prop' "$CLI" doctor "$MISSING"
 
 # ---------------------------------------------------------------------------
+section 'bump subcommand'
+# ---------------------------------------------------------------------------
+BUMP_DIR="$TMP_DIR/bump-target"
+run_ok 'init module for bump testing' \
+  "$CLI" init "$BUMP_DIR" --id BumpMod --repo Raffxzr/BumpMod -y
+
+assert_contains "$BUMP_DIR/module.prop" 'version=v0.1.0'
+assert_contains "$BUMP_DIR/module.prop" 'versionCode=1'
+
+# Test patch bump
+run_ok 'bump patch increments patch and versionCode' \
+  "$CLI" bump patch "$BUMP_DIR" -y
+assert_contains "$BUMP_DIR/module.prop" 'version=v0.1.1'
+assert_contains "$BUMP_DIR/module.prop" 'versionCode=2'
+assert_contains "$BUMP_DIR/update.json" '"version": "v0.1.1"'
+assert_contains "$BUMP_DIR/update.json" '"versionCode": 2'
+assert_contains "$BUMP_DIR/CHANGELOG.md" '## [v0.1.1]'
+
+# Test minor bump
+run_ok 'bump minor increments minor and resets patch' \
+  "$CLI" bump minor "$BUMP_DIR" -y
+assert_contains "$BUMP_DIR/module.prop" 'version=v0.2.0'
+assert_contains "$BUMP_DIR/module.prop" 'versionCode=3'
+assert_contains "$BUMP_DIR/update.json" '"version": "v0.2.0"'
+
+# Test major bump with custom notes
+run_ok 'bump major increments major and sets notes' \
+  "$CLI" bump major "$BUMP_DIR" --notes 'Major redesign' -y
+assert_contains "$BUMP_DIR/module.prop" 'version=v1.0.0'
+assert_contains "$BUMP_DIR/module.prop" 'versionCode=4'
+assert_contains "$BUMP_DIR/CHANGELOG.md" 'Major redesign'
+
+# Test explicit version and custom code
+run_ok 'bump explicit version and custom code' \
+  "$CLI" bump v2.5.0 "$BUMP_DIR" --code 99 -y
+assert_contains "$BUMP_DIR/module.prop" 'version=v2.5.0'
+assert_contains "$BUMP_DIR/module.prop" 'versionCode=99'
+assert_contains "$BUMP_DIR/update.json" '"version": "v2.5.0"'
+assert_contains "$BUMP_DIR/update.json" '"versionCode": 99'
+
+# ---------------------------------------------------------------------------
+section 'add subcommand'
+# ---------------------------------------------------------------------------
+ADD_DIR="$TMP_DIR/add-target"
+run_ok 'init minimal module for add testing' \
+  "$CLI" init "$ADD_DIR" --id AddMod --repo Raffxzr/AddMod --template minimal -y
+
+assert_no_file "$ADD_DIR/webroot/index.html"
+assert_no_file "$ADD_DIR/post-fs-data.sh"
+assert_no_file "$ADD_DIR/action.sh"
+assert_no_file "$ADD_DIR/system/bin/AddMod"
+
+run_ok 'add webui' "$CLI" add webui "$ADD_DIR"
+assert_file "$ADD_DIR/webroot/index.html"
+assert_contains "$ADD_DIR/webroot/index.html" '<title>AddMod</title>'
+
+run_ok 'add post-fs-data' "$CLI" add post-fs-data "$ADD_DIR"
+assert_file "$ADD_DIR/post-fs-data.sh"
+assert_exec "$ADD_DIR/post-fs-data.sh"
+
+run_ok 'add action' "$CLI" add action "$ADD_DIR"
+assert_file "$ADD_DIR/action.sh"
+assert_exec "$ADD_DIR/action.sh"
+
+run_ok 'add cli' "$CLI" add cli "$ADD_DIR"
+assert_file "$ADD_DIR/system/bin/AddMod"
+assert_exec "$ADD_DIR/system/bin/AddMod"
+
+run_fail 'add refuses to overwrite existing component without --force' \
+  "$CLI" add webui "$ADD_DIR"
+
+run_ok 'add with --force overwrites existing component' \
+  "$CLI" add webui "$ADD_DIR" --force
+
+# ---------------------------------------------------------------------------
+section 'doctor --fix auto-repair'
+# ---------------------------------------------------------------------------
+FIX_DIR="$TMP_DIR/fix-target"
+run_ok 'init module for doctor fix testing' \
+  "$CLI" init "$FIX_DIR" --id FixMod --repo Raffxzr/FixMod -y
+
+printf 'SKIPUNZIP=1\r\nASH_STANDALONE=1\r\n' >> "$FIX_DIR/customize.sh"
+chmod -x "$FIX_DIR/customize.sh"
+chmod -x "$FIX_DIR/build.sh"
+
+run_fail 'doctor detects CRLF and non-executable files' \
+  "$CLI" doctor "$FIX_DIR" --strict
+
+run_ok 'doctor --fix repairs CRLF and permissions' \
+  "$CLI" doctor "$FIX_DIR" --fix
+
+assert_exec "$FIX_DIR/customize.sh"
+assert_exec "$FIX_DIR/build.sh"
+run_ok 'doctor passes cleanly after fix' \
+  "$CLI" doctor "$FIX_DIR" --strict
+
+# ---------------------------------------------------------------------------
+section 'lint subcommand'
+# ---------------------------------------------------------------------------
+run_ok 'lint accepts clean module' "$CLI" lint "$STANDARD" --strict
+
+LINT_BROKEN="$TMP_DIR/lint-broken"
+cp -R "$STANDARD" "$LINT_BROKEN"
+printf 'if then fi syntax error\n' >> "$LINT_BROKEN/customize.sh"
+run_fail 'lint detects shell syntax errors' "$CLI" lint "$LINT_BROKEN"
+
+# ---------------------------------------------------------------------------
 section 'summary'
 # ---------------------------------------------------------------------------
 printf '\n%d passed, %d failed\n' "$PASS" "$FAIL"
