@@ -19,7 +19,7 @@ done
 ROOT_DIR=$(cd -P "$(dirname "$_self")" && pwd)
 export ROOT_DIR
 
-MODULIZE_VERSION="0.1.0"
+MODULIZE_VERSION="0.2.0"
 export MODULIZE_VERSION
 
 # shellcheck source=lib/common.sh

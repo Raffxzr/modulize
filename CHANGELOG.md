@@ -1,6 +1,16 @@
 # Changelog
 
-All notable changes to `raff-module` are documented in this file.
+All notable changes to `modulize` are documented in this file.
+
+## [0.2.0] - 2026-11-10
+
+### Changed
+
+- Renamed the project, repository, and CLI from `raff-module` to `modulize`.
+- Installed binary is now `~/.local/bin/modulize`.
+- Runtime payload is now `~/.local/share/modulize`.
+- Version environment variable is now `MODULIZE_VERSION`.
+- The old `Raffxzr/raff-module` GitHub URL redirects to `Raffxzr/modulize`.
 
 ## [0.1.0] - 2026-11-10
 
