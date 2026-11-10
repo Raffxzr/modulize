@@ -1,0 +1,22 @@
+# Changelog
+
+All notable changes to `raff-module` are documented in this file.
+
+## [0.1.0] - 2026-11-10
+
+### Added
+
+- `raff-module init` with interactive and flag-driven scaffolding.
+- `minimal`, `standard`, and `full` module profiles.
+- Magisk / KernelSU / APatch templates:
+  `module.prop`, `customize.sh`, `update.json`, `build.sh`, installer,
+  service/action/uninstall hooks, CLI stub, and WebUI skeleton.
+- GitHub Actions templates for build artifacts and tag-driven releases.
+- `raff-module build` and `raff-module doctor` commands.
+- End-to-end smoke test suite with 80+ assertions.
+- `make install` installer for `~/.local` or a custom `PREFIX`.
+
+### Fixed
+
+- Generated build workflow follows the `--branch` value instead of hardcoding
+  `main`.
